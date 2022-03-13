@@ -2,8 +2,8 @@ from signal import pause
 from buildhat import Motor
 import time
 
-right_wheel = Motor('A')
-left_wheel = Motor('B')
+left_wheel = Motor('A')
+right_wheel = Motor('B')
 hook = Motor('C')
 
 def open_hook():
@@ -16,7 +16,7 @@ def stop():
     left_wheel.stop()
     right_wheel.stop()
 
-def forward(left_speed=100, right_speed=-100):
+def forward(left_speed=-100, right_speed=100):
     left_wheel.start(left_speed)
     right_wheel.start(right_speed)
 
