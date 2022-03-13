@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 from pathlib import Path
-import sys
 import cv2
 import depthai as dai
 import numpy as np
-import time
+from motor import *
 
 '''
 Spatial Tiny-yolo example
@@ -14,7 +13,7 @@ Spatial Tiny-yolo example
 '''
 
 # Get argument first
-nnPath = str((Path(__file__).parent / Path('../code/models/frozen_darknet_yolov4_tiny_model_openvino_2021.4_5shave.blob')).resolve().absolute())
+nnPath = str((Path(__file__).parent / Path('models/frozen_darknet_yolov4_model_openvino_2021.4_6shave.blob')).resolve().absolute())
 
 # Tiny yolo v3/4 label texts
 labelMap = [
@@ -58,7 +57,7 @@ monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
 
 spatialDetectionNetwork.setBlobPath(nnPath)
-spatialDetectionNetwork.setConfidenceThreshold(0.3)
+spatialDetectionNetwork.setConfidenceThreshold(0.1)
 spatialDetectionNetwork.input.setBlocking(False)
 spatialDetectionNetwork.setBoundingBoxScaleFactor(0.5)
 spatialDetectionNetwork.setDepthLowerThreshold(100)
@@ -69,7 +68,7 @@ spatialDetectionNetwork.setNumClasses(2)
 spatialDetectionNetwork.setCoordinateSize(4)
 spatialDetectionNetwork.setAnchors(np.array([10,14, 23,27, 37,58, 81,82, 135,169, 344,319]))
 spatialDetectionNetwork.setAnchorMasks({ "side26": np.array([1,2,3]), "side13": np.array([3,4,5]) })
-spatialDetectionNetwork.setIouThreshold(0.3)
+spatialDetectionNetwork.setIouThreshold(0.1)
 
 # Linking
 monoLeft.out.link(stereo.left)
@@ -86,7 +85,6 @@ spatialDetectionNetwork.boundingBoxMapping.link(xoutBoundingBoxDepthMapping.inpu
 
 stereo.depth.link(spatialDetectionNetwork.inputDepth)
 spatialDetectionNetwork.passthroughDepth.link(xoutDepth.input)
-
 
 def object_tracking_detections(previewQueue, detectionNNQueue, depthQueue):
     color = (255, 255, 255)
@@ -133,12 +131,20 @@ with dai.Device(pipeline) as device:
     while True:
         detections = object_tracking_detections(previewQueue, detectionNNQueue, depthQueue)
         
-        for detection in detections:
-            label = detection.label
-            confidence = detection.confidence
-            xmax = detection.xmax
-            xmin = detection.xmin
-            ymax = detection.ymax
-            ymin = detection.ymin
-            depth = detection.spatialCoordinates.z
-            print("Label: {}, Confidence: {}, xmin: {}, xmax: {}, ymin: {}, ymax: {}, depth: {}".format(label, confidence, xmin, xmax, ymin, ymax, depth))
+        if len(detections) == 0:
+            # Go forwards
+            forward(left_speed=20, right_speed=-20)
+        else:
+            # Move the car in the direction of the object
+            # xcenter close to 0 is left, close to 1 is right
+            # If the object is far go faster
+            stop()
+            xcenter = (detections[0].xmax + detections[0].xmin) / 2
+            depth = detections[0].spatialCoordinates.z
+            right_wheel = xcenter * (-100)
+            left_wheel = 100 + right_wheel
+            speed = 1 if (depth / 1000) > 1 else (depth / 1000)
+            print("right_wheel: " + str(right_wheel))
+            print("left_wheel: " + str(left_wheel))
+            print("speed: " + str(speed))
+            forward(left_speed=left_wheel, right_speed=right_wheel)

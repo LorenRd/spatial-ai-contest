@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 # Get argument first
-nnPath = str((Path(__file__).parent / Path('../code/models/frozen_darknet_yolov4_tiny_model_openvino_2021.4_5shave.blob')).resolve().absolute())
+nnPath = str((Path(__file__).parent / Path('models/frozen_darknet_yolov4_model_openvino_2021.4_6shave.blob')).resolve().absolute())
 
 labelMap = [
     "Plastic","Can"
@@ -33,12 +33,12 @@ camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
 camRgb.setFps(40)
 
 # Network specific settings
-detectionNetwork.setConfidenceThreshold(0.2)
+detectionNetwork.setConfidenceThreshold(0.1)
 detectionNetwork.setNumClasses(2)
 detectionNetwork.setCoordinateSize(4)
 detectionNetwork.setAnchors(np.array([10, 14, 23, 27, 37, 58, 81, 82, 135, 169, 344, 319]))
 detectionNetwork.setAnchorMasks({"side26": np.array([1, 2, 3]), "side13": np.array([3, 4, 5])})
-detectionNetwork.setIouThreshold(0.5)
+detectionNetwork.setIouThreshold(0.1)
 detectionNetwork.setBlobPath(nnPath)
 detectionNetwork.setNumInferenceThreads(2)
 detectionNetwork.input.setBlocking(False)
