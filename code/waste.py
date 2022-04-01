@@ -165,15 +165,16 @@ with dai.Device(pipeline) as device:
 
         if cv2.waitKey(1) == ord('q'):
             break
+
         if len(detections) == 0:
             # Go forwards
-            #forward(left_speed=20, right_speed=-20)
-            stop()
+            #forward(left_speed=left_wheel, right_speed=right_wheel)
+            left(turn_speed=5)
         else:
+            stop()
             # Move the car in the direction of the object
             # xcenter close to 0 is left, close to 1 is right
             # If the object is far go faster
-            #stop()
             xcenter = (detections[0].xmax + detections[0].xmin) / 2
             depth = detections[0].spatialCoordinates.z
             print("center" + str(xcenter))
@@ -183,4 +184,4 @@ with dai.Device(pipeline) as device:
             print("right_wheel: " + str(right_wheel))
             print("left_wheel: " + str(left_wheel))
             print("speed: " + str(speed))
-            forward(left_speed=left_wheel, right_speed=right_wheel)
+            forward(left_speed=left_wheel*speed, right_speed=right_wheel*speed)

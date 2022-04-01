@@ -26,11 +26,15 @@ def backward():
     right_wheel.start(100)
 
 
-def right():
-    left_wheel.start(-100)
-    right_wheel.start(-100)
+def right(turn_speed=100):
+    left_wheel.start(-turn_speed)
+    right_wheel.start(-turn_speed)
 
 
-def left():
-    left_wheel.start(100)
-    right_wheel.start(100)
+def left(turn_speed=100):
+    left_wheel.start(turn_speed)
+    right_wheel.start(turn_speed)
+
+def left_seconds(turn_speed=100, seconds=1):
+    left_wheel.run_for_seconds(seconds, turn_speed)
+    time.sleep(seconds)

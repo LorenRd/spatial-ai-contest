@@ -1,3 +1,4 @@
 # Python and Pycharm
 .idea
 venv
+__pycache__
