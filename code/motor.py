@@ -10,7 +10,7 @@ def open_hook():
     hook.run_to_position(35, speed=100, blocking=True)
 
 def close_hook():
-    hook.run_to_position(-30, speed=100, blocking=True)
+    hook.run_to_position(-35, speed=100, blocking=True)
 
 def stop():
     left_wheel.stop()
@@ -22,8 +22,8 @@ def forward(left_speed=-100, right_speed=100):
 
 
 def backward():
-    left_wheel.start(-100)
-    right_wheel.start(100)
+    left_wheel.start(100)
+    right_wheel.start(-100)
 
 
 def right(turn_speed=100):

@@ -14,7 +14,7 @@ Spatial Tiny-yolo example
 '''
 
 # Get argument first
-nnPath = str((Path(__file__).parent / Path('../code/models/frozen_darknet_yolov4_tiny_model_openvino_2021.4_5shave.blob')).resolve().absolute())
+nnPath = str((Path(__file__).parent / Path('../code/models/frozen_darknet_yolov4_extended_model_openvino_2021.4_6shave.blob')).resolve().absolute())
 
 # Tiny yolo v3/4 label texts
 labelMap = [
@@ -58,7 +58,7 @@ monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
 stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
 
 spatialDetectionNetwork.setBlobPath(nnPath)
-spatialDetectionNetwork.setConfidenceThreshold(0.3)
+spatialDetectionNetwork.setConfidenceThreshold(0.75)
 spatialDetectionNetwork.input.setBlocking(False)
 spatialDetectionNetwork.setBoundingBoxScaleFactor(0.5)
 spatialDetectionNetwork.setDepthLowerThreshold(100)
@@ -69,7 +69,7 @@ spatialDetectionNetwork.setNumClasses(2)
 spatialDetectionNetwork.setCoordinateSize(4)
 spatialDetectionNetwork.setAnchors(np.array([10,14, 23,27, 37,58, 81,82, 135,169, 344,319]))
 spatialDetectionNetwork.setAnchorMasks({ "side26": np.array([1,2,3]), "side13": np.array([3,4,5]) })
-spatialDetectionNetwork.setIouThreshold(0.3)
+spatialDetectionNetwork.setIouThreshold(0.75)
 
 # Linking
 monoLeft.out.link(stereo.left)
@@ -100,6 +100,12 @@ with dai.Device(pipeline) as device:
     counter = 0
     fps = 0
     color = (255, 255, 255)
+
+    
+    found = False
+    last_detection = None
+    stop()
+    open_hook()
 
     while True:
         inPreview = previewQueue.get()
@@ -166,22 +172,40 @@ with dai.Device(pipeline) as device:
         if cv2.waitKey(1) == ord('q'):
             break
 
-        if len(detections) == 0:
+        if len(detections) == 0 and not found:
             # Go forwards
             #forward(left_speed=left_wheel, right_speed=right_wheel)
             left(turn_speed=5)
         else:
-            stop()
+            #stop()
+            found = True
             # Move the car in the direction of the object
             # xcenter close to 0 is left, close to 1 is right
             # If the object is far go faster
-            xcenter = (detections[0].xmax + detections[0].xmin) / 2
-            depth = detections[0].spatialCoordinates.z
+            detection = None
+            xcenter = 0.5
+            depth = 0
+            if len(detections) != 0:
+                xcenter = (detections[0].xmax + detections[0].xmin) / 2
+                depth = detections[0].spatialCoordinates.z
+                last_detection = detections[0]
+            else:
+                xcenter = (last_detection.xmax + last_detection.xmin) / 2
+                depth = last_detection.spatialCoordinates.z
             print("center" + str(xcenter))
             left_wheel = -100 * xcenter
             right_wheel = 100 + left_wheel
-            speed = 1 if (depth / 1000) > 1 else (depth / 1000)
+            #speed = 1 if (depth / 1000) > 1 else (depth / 1000)
+            speed = 0.20
+            bbarea = (last_detection.xmax - last_detection.xmin) * (last_detection.ymax - last_detection.ymin)
             print("right_wheel: " + str(right_wheel))
             print("left_wheel: " + str(left_wheel))
-            print("speed: " + str(speed))
-            forward(left_speed=left_wheel*speed, right_speed=right_wheel*speed)
+            print("depth: " + str(depth))
+            print("bounding box area: " + str(bbarea))
+            print(" ---------------------------------- ")
+            if bbarea < 0.40:
+                forward(left_speed=left_wheel*speed, right_speed=right_wheel*speed)
+            else:
+                break
+    stop()
+    close_hook()

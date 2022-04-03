@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 # Get argument first
-nnPath = str((Path(__file__).parent / Path('models/frozen_darknet_yolov4_model_openvino_2021.4_6shave.blob')).resolve().absolute())
+nnPath = str((Path(__file__).parent / Path('models/frozen_darknet_yolov4_extended_model_openvino_2021.4_6shave.blob')).resolve().absolute())
 
 labelMap = [
     "Plastic","Can"

@@ -14,7 +14,7 @@ Spatial Tiny-yolo example
 '''
 
 # Get argument first
-nnPath = str((Path(__file__).parent / Path('../code/models/frozen_darknet_yolov4_tiny_model_openvino_2021.4_5shave.blob')).resolve().absolute())
+nnPath = str((Path(__file__).parent / Path('../code/models/frozen_darknet_yolov4_extended_model_openvino_2021.4_6shave.blob')).resolve().absolute())
 
 # Tiny yolo v3/4 label texts
 labelMap = [
